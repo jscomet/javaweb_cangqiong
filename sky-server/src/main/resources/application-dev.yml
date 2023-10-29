@@ -12,3 +12,9 @@ sky:
     admin-ttl: 7200000
     # 设置前端传递过来的令牌名称
     admin-token-name: token
+  #阿里云配置
+  alioss:
+    endpoint: oss-cn-shenzhen.aliyuncs.com
+    access-key-id: LTAI5tATMFst2s9EFNvARHxF
+    access-key-secret: KppIciHkLf7XAQBKtoHhau0PL7cMUk
+    bucket-name: jscomet-web
