@@ -18,3 +18,8 @@ sky:
     access-key-id: LTAI5tATMFst2s9EFNvARHxF
     access-key-secret: KppIciHkLf7XAQBKtoHhau0PL7cMUk
     bucket-name: jscomet-web
+  redis:
+    host: localhost
+    port: 6379
+    password: 123456
+    database: 10
