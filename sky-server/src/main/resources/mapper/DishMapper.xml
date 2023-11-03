@@ -35,4 +35,9 @@
             </set>
         where id = #{id}
     </update>
+    <select id="list" parameterType="Dish" resultType="Dish">
+            select * from dish
+            where category_id=#{categoryId}
+            order by create_time desc
+    </select>
 </mapper>
