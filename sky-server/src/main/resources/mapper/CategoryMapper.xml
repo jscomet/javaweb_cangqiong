@@ -22,7 +22,7 @@
             <if test="type != null">
                 type = #{type},
             </if>
-            <if test="name != null">
+            <if test="name != null and name != ''">
                 name = #{name},
             </if>
             <if test="sort != null">
@@ -43,10 +43,17 @@
 
     <select id="list" resultType="Category">
         select * from category
-        where status = 1
-        <if test="type != null">
-            and type = #{type}
-        </if>
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name},'%')
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="status!=null">
+                and status =#{status}
+            </if>
+        </where>
         order by sort asc,create_time desc
     </select>
 </mapper>

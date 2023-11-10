@@ -42,8 +42,16 @@ public interface CategoryService {
 
     /**
      * 根据类型查询分类
+     * @param category
+     * @return
+     */
+//    List<Category> list(Integer type);
+    List<Category> list(Category category);
+
+    /**
+     * 根据类型为用户查询分类
      * @param type
      * @return
      */
-    List<Category> list(Integer type);
+    List<Category> listForUser(Integer type);
 }

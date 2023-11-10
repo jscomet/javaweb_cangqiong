@@ -34,6 +34,7 @@ public class SetmealController {
      */
     @ApiOperation(value = "分页查询")
     @GetMapping("/page")
+    @Cacheable(cacheNames = "setmealPageQueryCache")
     public Result<PageResult> page(SetmealPageQueryDTO setmealPageQueryDTO) {
         log.info("分页查询：{}", setmealPageQueryDTO);
         PageResult pageResult = setmealService.pageQuery(setmealPageQueryDTO);
@@ -47,7 +48,7 @@ public class SetmealController {
      */
     @PostMapping
     @ApiOperation(value = "新增套餐")
-    @CacheEvict(cacheNames = "setmealCache",key = "#setmealDTO.categoryId")//key: setmealCache::100
+    @CacheEvict(cacheNames = {"setmealCache","setmealPageQueryCache"},key = "#setmealDTO.categoryId")//key: setmealCache::100
     public Result<String> save(@RequestBody SetmealDTO setmealDTO){
         log.info("新增套餐：{}",setmealDTO);
         setmealService.saveWithDish(setmealDTO);
@@ -74,7 +75,7 @@ public class SetmealController {
      */
     @PutMapping
     @ApiOperation(value = "修改套餐信息")
-    @CacheEvict(cacheNames = "setmealCache",allEntries = true)
+    @CacheEvict(cacheNames = {"setmealCache","setmealPageQueryCache"},allEntries = true)
     public Result<String> update(@RequestBody SetmealDTO setmealDTO){
         log.info("修改套餐信息：{}",setmealDTO);
         setmealService.updateWithDishes(setmealDTO);
@@ -89,7 +90,7 @@ public class SetmealController {
      */
     @PostMapping("/status/{status}")
     @ApiOperation(value = "启用禁用套餐")
-    @CacheEvict(cacheNames = "setmealCache",allEntries = true)
+    @CacheEvict(cacheNames = {"setmealCache","setmealPageQueryCache"},allEntries = true)
     public  Result<String> startOrStop(@PathVariable Integer status, Long id){
         log.info("启用禁用套餐:{{},{}}",status,id);
         setmealService.startOrStop(status,id);
@@ -103,7 +104,7 @@ public class SetmealController {
      */
     @DeleteMapping
     @ApiOperation(value = "批量删除套餐")
-    @CacheEvict(cacheNames = "setmealCache",allEntries = true)
+    @CacheEvict(cacheNames = {"setmealCache","setmealPageQueryCache"},allEntries = true)
     public Result<String> delete(@RequestParam List<Long> ids){
         log.info("批量删除套餐：{}",ids);
         setmealService.deleteBatch(ids);

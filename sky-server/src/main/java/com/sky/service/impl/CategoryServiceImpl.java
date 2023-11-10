@@ -124,10 +124,24 @@ public class CategoryServiceImpl implements CategoryService {
 
     /**
      * 根据类型查询分类
+     * @param category
+     * @return
+     */
+    public List<Category> list(Category category) {
+
+        return categoryMapper.list(category);
+    }
+
+    /**
+     * 根据类型为用户查询分类
+     *
      * @param type
      * @return
      */
-    public List<Category> list(Integer type) {
-        return categoryMapper.list(type);
+    public List<Category> listForUser(Integer type) {
+        return categoryMapper.list(Category.builder()
+                .status(StatusConstant.ENABLE)
+                .type(type)
+                .build());
     }
 }

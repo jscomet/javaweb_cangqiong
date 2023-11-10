@@ -15,6 +15,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -83,6 +85,7 @@ public class EmployeeController {
      */
     @ApiOperation(value ="新增员工")
     @PostMapping
+    @CacheEvict(cacheNames = {"EmployeePageQueryCache"},allEntries = true)
     public Result save(@RequestBody  EmployeeDTO employeeDTO){
         log.info("新增员工：{}",employeeDTO);
         employeeService.save(employeeDTO);
@@ -96,6 +99,7 @@ public class EmployeeController {
      */
     @GetMapping("/page")
     @ApiOperation("员工分页查询")
+    @Cacheable(cacheNames = "EmployeePageQueryCache")
     public Result<PageResult> page(EmployeePageQueryDTO employeePageQueryDTO){
         log.info("员工分页查询，参数为：{}", employeePageQueryDTO);
         PageResult pageResult=employeeService.pageQuery(employeePageQueryDTO);
