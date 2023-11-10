@@ -4,6 +4,8 @@ import com.sky.dto.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.entity.Category;
 import com.sky.result.PageResult;
+import org.springframework.cache.annotation.Cacheable;
+
 import java.util.List;
 
 public interface CategoryService {
@@ -48,10 +50,4 @@ public interface CategoryService {
 //    List<Category> list(Integer type);
     List<Category> list(Category category);
 
-    /**
-     * 根据类型为用户查询分类
-     * @param type
-     * @return
-     */
-    List<Category> listForUser(Integer type);
 }

@@ -38,7 +38,6 @@ public class DishController {
      */
     @GetMapping("/page")
     @ApiOperation("菜品分页查询")
-    @Cacheable(cacheNames = "DishPageQueryCache")
     public Result<PageResult>page(DishPageQueryDTO dishPageQueryDTO){
         log.info("菜品分页查询{}",dishPageQueryDTO);
         PageResult pageResult=dishService.pageQuery(dishPageQueryDTO);
@@ -52,7 +51,6 @@ public class DishController {
      */
     @DeleteMapping
     @ApiOperation("菜品批量删除")
-    @CacheEvict(cacheNames = {"ListDishVOCache","DishPageQueryCache"},allEntries = true)
     public Result delete(@RequestParam List<Long> ids){
         log.info("菜品批量删除：{}",ids);
         dishService.deleteBatch(ids);
@@ -82,7 +80,6 @@ public class DishController {
      */
     @PostMapping
     @ApiOperation("新增菜品")
-    @CacheEvict(cacheNames = {"ListDishVOCache","DishPageQueryCache"},key="#dishDTO.categoryId")
     public Result save(@RequestBody DishDTO dishDTO){
         log.info("新增菜品{}",dishDTO);
         dishService.saveWithFlavor(dishDTO);
@@ -100,7 +97,6 @@ public class DishController {
      */
     @PutMapping
     @ApiOperation("修改商品")
-    @CacheEvict(cacheNames = {"ListDishVOCache","DishPageQueryCache"},allEntries = true)
     public Result update(@RequestBody DishDTO dishDTO){
         log.info("修改商品:{}",dishDTO);
         dishService.updateWithFlavor(dishDTO);

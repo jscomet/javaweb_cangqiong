@@ -30,10 +30,13 @@ public class CategoryController {
      */
     @GetMapping("/list")
     @ApiOperation("查询分类")
-    @Cacheable(cacheNames = "ListCategoryCache")
     public Result<List<Category>> list(Integer type) {
         log.info("查询分类:{}",type);
-        List<Category> list = categoryService.listForUser(type);
+        Category category=Category.builder()
+                .status(StatusConstant.ENABLE)
+                .type(type)
+                .build();
+        List<Category> list = categoryService.list(category);
         return Result.success(list);
     }
 }

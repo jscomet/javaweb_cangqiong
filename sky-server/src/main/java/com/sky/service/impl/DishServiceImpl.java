@@ -19,6 +19,9 @@ import com.sky.vo.DishVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,12 +38,70 @@ public class DishServiceImpl implements DishService {
     @Autowired
     private SetmealDishMapper setmealDishMapper;
     /**
+     * 条件查询菜品和口味
+     *
+     * @param dish
+     * @return
+     */
+    @Cacheable(cacheNames = "ListDishVOCache",key="#dish.categoryId")
+    public List<DishVO> listWithFlavor(Dish dish) {
+        log.info("dish:{}",dish);
+        List<Dish> dishList = dishMapper.list(dish);
+
+        List<DishVO> dishVOList = new ArrayList<>();
+
+        for (Dish d : dishList) {
+            DishVO dishVO = new DishVO();
+            BeanUtils.copyProperties(d,dishVO);
+
+            //根据菜品id查询对应的口味
+            List<DishFlavor> flavors = dishFlavorMapper.getByDishId(d.getId());
+
+            dishVO.setFlavors(flavors);
+            dishVOList.add(dishVO);
+        }
+
+        return dishVOList;
+    }
+    /**
+     * 菜品分页查询
+     *
+     * @param dishPageQueryDTO
+     * @return
+     */
+    @Cacheable(cacheNames = "DishPageQueryCache")
+    public PageResult pageQuery(DishPageQueryDTO dishPageQueryDTO) {
+        PageHelper.startPage(dishPageQueryDTO.getPage(),dishPageQueryDTO.getPageSize());
+        Page<DishVO> page=dishMapper.pageQuery(dishPageQueryDTO);
+        return new PageResult(page.getTotal(),page.getResult());
+    }
+    /**
+     * 根据id查询菜品
+     *
+     * @param id
+     * @return
+     */
+    @Cacheable(cacheNames = "DishVOIdCache",key="#id")
+    public DishVO getByIdWithFlavor(Long id) {
+        //根据id查询菜品数据
+        Dish dish=dishMapper.getById(id);
+        //根据菜品id查询口味数据
+        List<DishFlavor>dishFlavors=dishFlavorMapper.getByDishId(id);
+
+        //将查询到的数据封装到VO
+        DishVO dishVO = new DishVO();
+        BeanUtils.copyProperties(dish,dishVO);
+        dishVO.setFlavors(dishFlavors);
+        return dishVO;
+    }
+    /**
      * 新增菜品及其口味
      *
      * @param dishDTO
      * @return
      */
     @Transactional//事务
+    @CacheEvict(cacheNames = {"ListDishVOCache","DishPageQueryCache","DishVOIdCache"},allEntries = true)
     public void saveWithFlavor(DishDTO dishDTO) {
         Dish dish=new Dish();
         BeanUtils.copyProperties(dishDTO,dish);
@@ -60,17 +121,7 @@ public class DishServiceImpl implements DishService {
         }
     }
 
-    /**
-     * 菜品分页查询
-     *
-     * @param dishPageQueryDTO
-     * @return
-     */
-    public PageResult pageQuery(DishPageQueryDTO dishPageQueryDTO) {
-        PageHelper.startPage(dishPageQueryDTO.getPage(),dishPageQueryDTO.getPageSize());
-        Page<DishVO> page=dishMapper.pageQuery(dishPageQueryDTO);
-        return new PageResult(page.getTotal(),page.getResult());
-    }
+
 
     /**
      * 商品批量删除
@@ -78,6 +129,7 @@ public class DishServiceImpl implements DishService {
      * @param ids
      */
     @Transactional//事务
+    @CacheEvict(cacheNames = {"ListDishVOCache","DishPageQueryCache","DishVOIdCache"},allEntries = true)
     public void deleteBatch(List<Long> ids) {
         for(Long id:ids){
             Dish dish=dishMapper.getById(id);
@@ -97,24 +149,7 @@ public class DishServiceImpl implements DishService {
         }
     }
 
-    /**
-     * 根据id查询菜品
-     *
-     * @param id
-     * @return
-     */
-    public DishVO getByIdWithFlavor(Long id) {
-        //根据id查询菜品数据
-        Dish dish=dishMapper.getById(id);
-        //根据菜品id查询口味数据
-        List<DishFlavor>dishFlavors=dishFlavorMapper.getByDishId(id);
 
-        //将查询到的数据封装到VO
-        DishVO dishVO = new DishVO();
-        BeanUtils.copyProperties(dish,dishVO);
-        dishVO.setFlavors(dishFlavors);
-        return dishVO;
-    }
 
     /**
      * 根据id修改菜品基本信息和对应的口味信息
@@ -122,6 +157,10 @@ public class DishServiceImpl implements DishService {
      * @param dishDTO
      */
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(cacheNames = {"ListDishVOCache","DishPageQueryCache"},key="#dishDTO.categoryId"),
+            @CacheEvict(cacheNames = {"DishVOIdCache"},key="#dishDTO.id")
+    })
     public void updateWithFlavor(DishDTO dishDTO) {
         Dish dish=new Dish();
         BeanUtils.copyProperties(dishDTO,dish);
@@ -145,6 +184,10 @@ public class DishServiceImpl implements DishService {
      * @param status
      * @param id
      */
+    @Caching(evict = {
+            @CacheEvict(cacheNames = {"ListDishVOCache","DishPageQueryCache"},allEntries = true),
+            @CacheEvict(cacheNames = {"DishVOIdCache"},key="#id")
+    })
     public void startOrStop(Integer status, Long id) {
         Dish dish = Dish.builder()
                 .id(id)
@@ -154,29 +197,5 @@ public class DishServiceImpl implements DishService {
         dishMapper.update(dish);
     }
 
-    /**
-     * 条件查询菜品和口味
-     *
-     * @param dish
-     * @return
-     */
-    public List<DishVO> listWithFlavor(Dish dish) {
-        log.info("dish:{}",dish);
-        List<Dish> dishList = dishMapper.list(dish);
 
-        List<DishVO> dishVOList = new ArrayList<>();
-
-        for (Dish d : dishList) {
-            DishVO dishVO = new DishVO();
-            BeanUtils.copyProperties(d,dishVO);
-
-            //根据菜品id查询对应的口味
-            List<DishFlavor> flavors = dishFlavorMapper.getByDishId(d.getId());
-
-            dishVO.setFlavors(flavors);
-            dishVOList.add(dishVO);
-        }
-
-        return dishVOList;
-    }
 }
