@@ -41,4 +41,25 @@
         </set>
         where id = #{id}
     </update>
+    <select id="pageQuery" parameterType="com.sky.dto.OrdersPageQueryDTO" resultType="com.sky.entity.Orders">
+        select * from orders
+        <where>
+            <if test="number!=null">and number =#{number}</if>
+            <if test="phone!=null">and phone =#{phone}</if>
+            <if test="status!=null">and status =#{status}</if>
+            <if test="userId!=null">and user_id =#{userId}</if>
+            <if test="beginTime!=null">and order_time &gt;= #{beginTime}</if>
+            <if test="endTime!=null">and order_time  &lt;= #{endTime}</if>
+        </where>
+        order by order_time desc
+    </select>
+    <select id="getCount" parameterType="Orders" resultType="integer" >
+        select count(*) from orders
+        <where>
+            <if test="number!=null">and number =#{number}</if>
+            <if test="phone!=null">and phone =#{phone}</if>
+            <if test="status!=null">and status =#{status}</if>
+            <if test="userId!=null">and user_id =#{userId}</if>
+        </where>
+    </select>
 </mapper>
